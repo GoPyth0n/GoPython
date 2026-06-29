@@ -7,7 +7,11 @@ import (
 )
 
 func OpLoadSmallInt(vm *VirtualMachine, frame *Frame, instr core.Instruction) {
-	frame.Stack.Push(&object.PyLongObject{Value: instr.Arg})
+    if instr.Arg >= -5 && instr.Arg <= 256 {
+        frame.Stack.Push(object.IntCache[instr.Arg + 5])
+        return
+    }
+    frame.Stack.Push(&object.PyLongObject{Value: instr.Arg})
 }
 
 func OpLoadConst(vm *VirtualMachine, frame *Frame, instr core.Instruction) {
@@ -58,15 +62,17 @@ func OpBinaryOp(vm *VirtualMachine, frame *Frame, instr core.Instruction) {
 
 	switch instr.Arg {
 	case 0:
-		frame.Stack.Push(a.Type().Number.Add(a, b))
+		frame.Stack.Push(a.Type().ArithMethods.Add(a, b))
+	case 1: 
+		frame.Stack.Push(a.Type().ArithMethods.BAnd(a, b))
 	case 2:
-		frame.Stack.Push(a.Type().Number.Div(a, b))
+		frame.Stack.Push(a.Type().ArithMethods.Div(a, b))
 	case 5:
-		frame.Stack.Push(a.Type().Number.Mul(a, b))
+		frame.Stack.Push(a.Type().ArithMethods.Mul(a, b))
 	case 8:
-		frame.Stack.Push(a.Type().Number.Pow(a, b))
+		frame.Stack.Push(a.Type().ArithMethods.Pow(a, b))
 	case 10:
-		frame.Stack.Push(a.Type().Number.Sub(a, b))
+		frame.Stack.Push(a.Type().ArithMethods.Sub(a, b))
 	}
 }
 

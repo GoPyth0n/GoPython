@@ -1,4 +1,3 @@
-// lexer.go
 package compiler
 
 import (
@@ -33,6 +32,7 @@ const (
 	TOKEN_RPAREN // )
 	TOKEN_COLON  // :
 	TOKEN_COMMA  // ,
+	TOKEN_AMPERSAND // &
 )
 
 var keywords = map[string]TokenType{
@@ -252,6 +252,8 @@ func (l *Lexer) lexOperator() {
 		l.emit(TOKEN_COLON, ":")
 	case ',':
 		l.emit(TOKEN_COMMA, ",")
+	case '&':
+		l.emit(TOKEN_AMPERSAND, "&")
 	default:
 		panic(fmt.Sprintf("SyntaxError: line %d: unexpected character %q", l.line, string(c)))
 	}

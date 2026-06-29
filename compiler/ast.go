@@ -1,4 +1,3 @@
-// ast.go
 package compiler
 
 import (
@@ -99,6 +98,8 @@ func BinOpArg(op string) int {
 		return 11
 	case "//":
 		return 2
+	case "&":
+		return 1
 	case "**":
 		return 8
 	}

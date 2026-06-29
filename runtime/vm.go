@@ -5,7 +5,6 @@ import (
 	"gopython/runtime/object"
 	"fmt" 
 )
-
 type VirtualMachine struct {
 	frames []*Frame
 	handlers [256]InstrHandler
@@ -30,6 +29,10 @@ func NewVM() *VirtualMachine {
 	vm.handlers[core.LOAD_CONST] = OpLoadConst
 	vm.handlers[core.CALL] = OpCall
 	vm.handlers[core.MAKE_FUNCTION] = OpMakeFunction
+
+	for i := -5; i <= 256; i++ {
+		object.IntCache[i + 5] = &object.PyLongObject{Value: i} 
+	}
 
 	return vm
 }

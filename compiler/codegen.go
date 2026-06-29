@@ -1,4 +1,3 @@
-// compiler/codegen.go
 package compiler
 
 import (

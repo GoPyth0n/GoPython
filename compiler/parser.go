@@ -1,4 +1,3 @@
-// parser.go
 package compiler
 
 import (
@@ -132,7 +131,7 @@ func (p *Parser) parseSimpleStmt() Stmt {
 
 func (p *Parser) parseExpr() Expr {
 	left := p.parseTerm()
-	for p.check(TOKEN_PLUS) || p.check(TOKEN_MINUS) {
+	for p.check(TOKEN_PLUS) || p.check(TOKEN_MINUS)  || p.check(TOKEN_AMPERSAND) {
 		op := p.advance().Lit
 		left = &BinOp{Op: op, Left: left, Right: p.parseTerm()}
 	}
