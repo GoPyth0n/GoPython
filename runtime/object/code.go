@@ -4,6 +4,8 @@ import "gopython/core"
 
 type PyCodeObject struct {
 	Chunk *core.Chunk
+	ArgCount int
+    ArgNames []string
 }
 
 func (o *PyCodeObject) Type() *PyType {

@@ -20,6 +20,8 @@ func OpLoadConst(vm *VirtualMachine, frame *Frame, instr core.Instruction) {
 	case core.CONST_CODE:
 		frame.Stack.Push(&object.PyCodeObject{
 			Chunk: c.Code.Chunk,
+			ArgCount: c.Code.ArgCount,
+			ArgNames: c.Code.ArgNames,
 		})
 	}
 }
@@ -130,6 +132,14 @@ func OpCall(vm *VirtualMachine, frame *Frame, instr core.Instruction) {
 		panic("CALL expects function object")
 	}
 
+	if argCount != pyfn.Code.ArgCount {
+		panic(fmt.Sprintf(
+			"expected %d arguments, got %d",
+			pyfn.Code.ArgCount,
+			argCount,
+		))
+	}
+
 	newFrame := &Frame{
 		Chunk:  pyfn.Code.Chunk,
 		PC:     0,
@@ -137,8 +147,8 @@ func OpCall(vm *VirtualMachine, frame *Frame, instr core.Instruction) {
 		Locals: make(map[string]object.PyObject),
 	}
 
-	for i, arg := range args {
-		newFrame.Locals[fmt.Sprintf("%d", i)] = arg
+	for i, name := range pyfn.Code.ArgNames {
+		newFrame.Locals[name] = args[i]
 	}
 
 	vm.frames = append(vm.frames, newFrame)

@@ -38,6 +38,8 @@ type Instruction struct {
 
 type PyCode struct {
 	Chunk *Chunk
+	ArgCount int
+    ArgNames []string
 }
 
 type Constant struct {

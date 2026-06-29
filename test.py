@@ -1,6 +1,4 @@
-def a():
-    def b():
-        return 1
-    return b()
+def a(x, y, z):
+    return x + y + z
 
-x = a()
+x = a(4, 3, 2)

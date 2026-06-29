@@ -74,7 +74,11 @@ func (cg *CodeGen) visit(n Node) {
 		funcCg.emit(core.RETURN_VALUE, 0)
 
 
-		pyCode := &core.PyCode{Chunk: funcCg.chunk}
+		pyCode := &core.PyCode{
+			Chunk: funcCg.chunk, 
+			ArgNames: append([]string(nil), node.Params...),
+			ArgCount: len(node.Params),
+		}
 		funcConst := core.Constant{Type: core.CONST_CODE, Code: pyCode}
 		constIdx := cg.addConstant(funcConst)
 		
