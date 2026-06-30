@@ -71,7 +71,6 @@ func main() {
 		return
 	}
 
-
 	fmt.Println("--- Running VM ---")
 
 	vm := runtime.NewVM()

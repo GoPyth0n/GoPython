@@ -1,4 +1,7 @@
 def sqrt(x):
-    return x ** 0.5
+    if x == 1:
+        return x
+    else:
+        return x ** 0.5
 
-r1 = 2 * 3.55939382
+r1 = 5 // 2

@@ -60,6 +60,16 @@ func OpLoadName(vm *VirtualMachine, frame *Frame, instr core.Instruction) {
 	panic("NameError: " + name)
 }
 
+func OpCompareOp(vm *VirtualMachine, frame *Frame, instr core.Instruction) {
+	rhs := frame.Stack.Pop()
+	lhs := frame.Stack.Pop()
+
+	switch instr.Arg {
+	case 88: // ==
+		frame.Stack.Push(lhs.Type().CompMethods.Equals(lhs, rhs))
+	}
+}
+
 func OpBinaryOp(vm *VirtualMachine, frame *Frame, instr core.Instruction) {
 	b := frame.Stack.Pop()
 	a := frame.Stack.Pop()

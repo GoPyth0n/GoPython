@@ -13,7 +13,7 @@ func (o *PyFloatObject) Type() *PyType {
 }
 
 func (o *PyFloatObject) String() string {
-	return strconv.FormatFloat(o.Value, 'f', -1, 64)
+	return strconv.FormatFloat(o.Value, 'g', -1, 64)
 }
 
 func NewFloat(v float64) PyObject {

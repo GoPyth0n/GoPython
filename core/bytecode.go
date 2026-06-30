@@ -13,6 +13,7 @@ const (
 
 	PUSH_NULL
 
+	COMPARE_OP
 	BINARY_OP
 
 	RETURN_VALUE

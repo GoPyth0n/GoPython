@@ -10,9 +10,14 @@ type PyArithmeticMethods struct {
 	Pow  func(PyObject, PyObject) PyObject
 }
 
+type PyComparisonMethods struct {
+	Equals func(PyObject, PyObject) PyObject
+}
+
 type PyType struct {
 	Name         string
 	ArithMethods *PyArithmeticMethods
+	CompMethods *PyComparisonMethods
 }
 
 var (
@@ -24,6 +29,9 @@ var (
 		IDiv:  IDiv,
 		Pow: Pow,
 		BAnd: BAnd,
+	},
+	CompMethods: &PyComparisonMethods{
+		Equals: Equals,
 	}}
 	FloatType    *PyType = &PyType{Name: "float", ArithMethods: &PyArithmeticMethods{
 		Add:  Add,
@@ -34,6 +42,7 @@ var (
 		Pow: Pow,
 		BAnd: BAnd,
 	}}
+	BooleanType *PyType = &PyType{Name: "bool"}
 	StrType      *PyType = &PyType{Name: "str"}
 	NoneType     *PyType = &PyType{Name: "none"}
 	CodeType     *PyType = &PyType{Name: "code"}
