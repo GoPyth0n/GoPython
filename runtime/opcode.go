@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"gopython/core"
 	"gopython/runtime/object"
+	"math/big"
 )
 
 func OpLoadSmallInt(vm *VirtualMachine, frame *Frame, instr core.Instruction) {
@@ -11,7 +12,7 @@ func OpLoadSmallInt(vm *VirtualMachine, frame *Frame, instr core.Instruction) {
         frame.Stack.Push(object.IntCache[instr.Arg + 5])
         return
     }
-    frame.Stack.Push(&object.PyLongObject{Value: instr.Arg})
+    frame.Stack.Push(&object.PyLongObject{Value: big.NewInt(int64(instr.Arg))})
 }
 
 func OpLoadConst(vm *VirtualMachine, frame *Frame, instr core.Instruction) {
@@ -19,7 +20,10 @@ func OpLoadConst(vm *VirtualMachine, frame *Frame, instr core.Instruction) {
 
 	switch c.Type {
 	case core.CONST_INT:
-		frame.Stack.Push(&object.PyLongObject{Value: c.Int})
+		frame.Stack.Push(&object.PyLongObject{Value: &c.Int})
+
+	case core.CONST_FLOAT:
+		frame.Stack.Push(&object.PyFloatObject{Value: c.Float})
 
 	case core.CONST_CODE:
 		frame.Stack.Push(&object.PyCodeObject{
@@ -66,13 +70,15 @@ func OpBinaryOp(vm *VirtualMachine, frame *Frame, instr core.Instruction) {
 	case 1: 
 		frame.Stack.Push(a.Type().ArithMethods.BAnd(a, b))
 	case 2:
-		frame.Stack.Push(a.Type().ArithMethods.Div(a, b))
+		frame.Stack.Push(a.Type().ArithMethods.IDiv(a, b))
 	case 5:
 		frame.Stack.Push(a.Type().ArithMethods.Mul(a, b))
 	case 8:
 		frame.Stack.Push(a.Type().ArithMethods.Pow(a, b))
 	case 10:
 		frame.Stack.Push(a.Type().ArithMethods.Sub(a, b))
+	case 11:
+    	frame.Stack.Push(a.Type().ArithMethods.Div(a, b))
 	}
 }
 

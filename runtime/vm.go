@@ -30,10 +30,6 @@ func NewVM() *VirtualMachine {
 	vm.handlers[core.CALL] = OpCall
 	vm.handlers[core.MAKE_FUNCTION] = OpMakeFunction
 
-	for i := -5; i <= 256; i++ {
-		object.IntCache[i + 5] = &object.PyLongObject{Value: i} 
-	}
-
 	return vm
 }
 

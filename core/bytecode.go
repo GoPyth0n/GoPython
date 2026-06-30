@@ -1,5 +1,7 @@
 package core
 
+import "math/big"
+
 type Bytecode byte
 type ConstType int
 
@@ -29,27 +31,24 @@ const (
 	CONST_NONE
 )
 
-
-
 type Instruction struct {
 	Op  Bytecode
 	Arg int
 }
 
 type PyCode struct {
-	Chunk *Chunk
+	Chunk    *Chunk
 	ArgCount int
-    ArgNames []string
+	ArgNames []string
 }
 
 type Constant struct {
-	Type ConstType
-	Int int
+	Type  ConstType
+	Int   big.Int
 	Float float64
-	Str string
-	Code *PyCode
+	Str   string
+	Code  *PyCode
 }
-
 
 type Chunk struct {
 	Instrs []Instruction

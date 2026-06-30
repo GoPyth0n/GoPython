@@ -2,6 +2,7 @@ package compiler
 
 import (
 	"fmt"
+	"math/big"
 	"strconv"
 	"strings"
 
@@ -165,7 +166,7 @@ func (p *Parser) parsePower() Expr {
 }
 
 func negate(e Expr) Expr {
-	return &BinOp{Op: "-", Left: &Literal{core.Constant{Type: core.CONST_INT, Int: 0}}, Right: e}
+	return &BinOp{Op: "-", Left: &Literal{core.Constant{Type: core.CONST_INT, Int: *big.NewInt(0)}}, Right: e}
 }
 
 func (p *Parser) parseCall() Expr {
@@ -202,7 +203,7 @@ func (p *Parser) parseAtom() Expr {
 		if err != nil {
 			panic("SyntaxError: invalid int literal " + tok.Lit)
 		}
-		return &Literal{core.Constant{Type: core.CONST_INT, Int: n}}
+		return &Literal{core.Constant{Type: core.CONST_INT, Int: *big.NewInt(int64(n))}}
 
 	case TOKEN_STRING:
 		p.advance()

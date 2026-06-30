@@ -1,5 +1,7 @@
 package object
 
+import "math/big"
+
 var (
 	// Min and Max defined for your cache range
 	cacheMin = -5
@@ -10,7 +12,7 @@ var (
 
 func init() {
 	for i := cacheMin; i <= cacheMax; i++ {
-		IntCache[i-cacheMin] = &PyLongObject{Value: i}
+		IntCache[i-cacheMin] = &PyLongObject{Value: big.NewInt(int64(i))}
 	}
 }
 
