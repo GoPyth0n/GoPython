@@ -1,8 +1,10 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"os"
+	"runtime/pprof"
 	"time"
 
 	"gopython/compiler"
@@ -10,26 +12,19 @@ import (
 )
 
 func main() {
-	if len(os.Args) < 2 {
+	// flags
+	bench := flag.Bool("bench", false, "benchmark program")
+	cpuProfile := flag.String("cpuprofile", "", "write cpu profile")
+
+	flag.Parse()
+
+	if flag.NArg() < 1 {
 		fmt.Println("Usage:")
-		fmt.Println("  go run . <file.py>")
-		fmt.Println("  go run . --bench <file.py>")
+		fmt.Println("  go run . [--bench] [--cpuprofile file] test.py")
 		os.Exit(1)
 	}
 
-	bench := false
-	var filename string
-
-	if os.Args[1] == "--bench" {
-		if len(os.Args) < 3 {
-			fmt.Println("Missing filename")
-			os.Exit(1)
-		}
-		bench = true
-		filename = os.Args[2]
-	} else {
-		filename = os.Args[1]
-	}
+	filename := flag.Arg(0)
 
 	src, err := os.ReadFile(filename)
 	if err != nil {
@@ -38,19 +33,32 @@ func main() {
 
 	fmt.Printf("--- Compiling %s ---\n", filename)
 
-	// Compile once
 	ast := compiler.Parse(string(src))
 	chunk := compiler.Compile(ast)
 
-	if bench {
+	if *cpuProfile != "" {
+		f, err := os.Create(*cpuProfile)
+		if err != nil {
+			panic(err)
+		}
+		defer f.Close()
+
+		if err := pprof.StartCPUProfile(f); err != nil {
+			panic(err)
+		}
+		defer pprof.StopCPUProfile()
+	}
+
+	if *bench {
 		const iterations = 1_000_000
 
 		fmt.Printf("--- Benchmark (%d iterations) ---\n", iterations)
 
 		start := time.Now()
 
+		vm := runtime.NewVM()
+
 		for i := 0; i < iterations; i++ {
-			vm := runtime.NewVM()
 			vm.PushFrame(chunk)
 			vm.Run()
 		}
@@ -62,6 +70,7 @@ func main() {
 		fmt.Printf("Runs/sec: %.0f\n", float64(iterations)/elapsed.Seconds())
 		return
 	}
+
 
 	fmt.Println("--- Running VM ---")
 

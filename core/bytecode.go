@@ -1,6 +1,6 @@
 package core
 
-type Bytecode int
+type Bytecode byte
 type ConstType int
 
 const (
