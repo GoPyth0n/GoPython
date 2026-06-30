@@ -1,7 +1,11 @@
-def sqrt(x):
-    if x == 1:
-        return x
+def sign(x):
+    if x < 0:
+        return -1
+    elif x == 0:
+        return 0
     else:
-        return x ** 0.5
-
-r1 = 5 // 2
+        return 1
+    
+x = sign(-5)
+y = sign(5)
+z = sign(0)

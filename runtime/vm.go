@@ -1,39 +1,44 @@
 package runtime
 
 import (
+	"fmt"
 	"gopython/core"
 	"gopython/runtime/object"
-	"fmt" 
 )
+
 type VirtualMachine struct {
-	frames []*Frame
-	handlers [256]InstrHandler
-	Globals map[string]object.PyObject
+	frames        []*Frame
+	handlers      [256]InstrHandler
+	Globals       map[string]object.PyObject
 	NoneSingleton *object.PyNoneObject
-	returnValue object.PyObject
+	returnValue   object.PyObject
 }
 
 func NewVM() *VirtualMachine {
 	vm := &VirtualMachine{
-		Globals: make(map[string]object.PyObject),
+		Globals:       make(map[string]object.PyObject),
 		NoneSingleton: &object.PyNoneObject{},
 	}
 
 	vm.handlers[core.LOAD_SMALL_INT] = OpLoadSmallInt
-	vm.handlers[core.STORE_NAME]     = OpStoreName
-	vm.handlers[core.LOAD_NAME]      = OpLoadName
-	vm.handlers[core.STORE_GLOBAL]   = OpStoreGlobal
-	vm.handlers[core.PUSH_NULL]      = OpPushNull
-	vm.handlers[core.BINARY_OP]      = OpBinaryOp
+	vm.handlers[core.STORE_NAME] = OpStoreName
+	vm.handlers[core.LOAD_NAME] = OpLoadName
+	vm.handlers[core.STORE_GLOBAL] = OpStoreGlobal
+	vm.handlers[core.PUSH_NULL] = OpPushNull
+	vm.handlers[core.BINARY_OP] = OpBinaryOp
 	vm.handlers[core.RETURN_VALUE] = OpReturnValue
 	vm.handlers[core.LOAD_CONST] = OpLoadConst
 	vm.handlers[core.CALL] = OpCall
 	vm.handlers[core.MAKE_FUNCTION] = OpMakeFunction
+	vm.handlers[core.JUMP_IF_FALSE] = OpJumpIfFalse
+	vm.handlers[core.JUMP_FORWARD] = OpJumpForward
+	vm.handlers[core.COMPARE_OP] = OpCompareOp
 
 	return vm
 }
 
 type InstrHandler func(vm *VirtualMachine, frame *Frame, instr core.Instruction)
+
 func (vm *VirtualMachine) Run() {
 	for len(vm.frames) > 0 {
 		frame := vm.frames[len(vm.frames)-1]
@@ -55,9 +60,9 @@ func (vm *VirtualMachine) Run() {
 
 func (vm *VirtualMachine) PushFrame(chunk *core.Chunk) {
 	vm.frames = append(vm.frames, &Frame{
-		Chunk: chunk,
-		PC: 0,
-		Stack: &PyStack{},
+		Chunk:  chunk,
+		PC:     0,
+		Stack:  &PyStack{},
 		Locals: make(map[string]object.PyObject),
 	})
 }

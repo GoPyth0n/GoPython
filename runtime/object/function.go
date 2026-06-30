@@ -1,12 +1,12 @@
 package object
 
 type PyFunctionObject struct {
-	Name string
+	Name    string
 	Globals map[string]PyObject
 
 	Code PyCodeObject
 }
- 
+
 func (o *PyFunctionObject) Type() *PyType {
 	return FunctionType
 }

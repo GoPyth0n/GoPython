@@ -16,12 +16,27 @@ const (
 	COMPARE_OP
 	BINARY_OP
 
+	JUMP_IF_FALSE
+	JUMP_FORWARD
+
 	RETURN_VALUE
 
 	LOAD_CONST
 	CALL
 
 	MAKE_FUNCTION
+)
+
+// COMPARE_OP arg codes. CMP_EQ keeps the value (88) already used elsewhere in
+// the codebase before this was wired up; the rest are just adjacent values,
+// not an attempt to bit-match real CPython's COMPARE_OP oparg packing.
+const (
+	CMP_EQ = 88
+	CMP_NE = 89
+	CMP_LT = 90
+	CMP_GT = 91
+	CMP_LE = 92
+	CMP_GE = 93
 )
 
 const (

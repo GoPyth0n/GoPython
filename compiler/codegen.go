@@ -61,6 +61,25 @@ func (cg *CodeGen) visit(n Node) {
 		}
 		cg.emit(core.RETURN_VALUE, 0)
 
+	case *IfStmt:
+		cg.visit(node.Cond)
+		jumpFalse := len(cg.chunk.Instrs)
+		cg.emit(core.JUMP_IF_FALSE, 0) // placeholder
+		for _, stmt := range node.Then {
+			cg.visit(stmt)
+		}
+		if node.Else != nil {
+			jumpEnd := len(cg.chunk.Instrs)
+			cg.emit(core.JUMP_FORWARD, 0) // placeholder
+			cg.chunk.Instrs[jumpFalse].Arg = len(cg.chunk.Instrs) // else starts here
+			for _, stmt := range node.Else {
+				cg.visit(stmt)
+			}
+			cg.chunk.Instrs[jumpEnd].Arg = len(cg.chunk.Instrs)
+		} else {
+			cg.chunk.Instrs[jumpFalse].Arg = len(cg.chunk.Instrs)
+		}
+
 	case *FunctionDef:
 		funcCg := NewCodeGen()
 		for _, arg := range node.Params {
@@ -72,18 +91,17 @@ func (cg *CodeGen) visit(n Node) {
 		funcCg.emit(core.PUSH_NULL, 0)
 		funcCg.emit(core.RETURN_VALUE, 0)
 
-
 		pyCode := &core.PyCode{
-			Chunk: funcCg.chunk, 
+			Chunk:    funcCg.chunk,
 			ArgNames: append([]string(nil), node.Params...),
 			ArgCount: len(node.Params),
 		}
 		funcConst := core.Constant{Type: core.CONST_CODE, Code: pyCode}
 		constIdx := cg.addConstant(funcConst)
-		
+
 		cg.emit(core.LOAD_CONST, constIdx)
 		cg.emit(core.MAKE_FUNCTION, 0)
-		
+
 		nameIdx := cg.addName(node.Name)
 		cg.emit(core.STORE_NAME, nameIdx)
 
@@ -110,7 +128,11 @@ func (cg *CodeGen) visit(n Node) {
 	case *BinOp:
 		cg.visit(node.Left)
 		cg.visit(node.Right)
-		cg.emit(core.BINARY_OP, BinOpArg(node.Op))
+		if isCompareOp(node.Op) {
+			cg.emit(core.COMPARE_OP, CompareOpArg(node.Op))
+		} else {
+			cg.emit(core.BINARY_OP, BinOpArg(node.Op))
+		}
 
 	case *CallExpr:
 		cg.visit(node.Func)

@@ -1,7 +1,6 @@
 package object
 
 type PyNoneObject struct {
-
 }
 
 func (o *PyNoneObject) Type() *PyType {

@@ -19,25 +19,38 @@ const (
 	TOKEN_STRING
 
 	TOKEN_DEF
+	TOKEN_IF
+	TOKEN_ELIF
+	TOKEN_ELSE
 	TOKEN_RETURN
 
-	TOKEN_ASSIGN // =
-	TOKEN_PLUS   // +
-	TOKEN_MINUS  // -
-	TOKEN_STAR   // *
-	TOKEN_DSTAR  // **
-	TOKEN_SLASH  // /
-	TOKEN_DSLASH // //
-	TOKEN_LPAREN // (
-	TOKEN_RPAREN // )
-	TOKEN_COLON  // :
-	TOKEN_COMMA  // ,
+	TOKEN_ASSIGN    // =
+	TOKEN_PLUS      // +
+	TOKEN_MINUS     // -
+	TOKEN_STAR      // *
+	TOKEN_DSTAR     // **
+	TOKEN_SLASH     // /
+	TOKEN_DSLASH    // //
+	TOKEN_LPAREN    // (
+	TOKEN_RPAREN    // )
+	TOKEN_COLON     // :
+	TOKEN_COMMA     // ,
 	TOKEN_AMPERSAND // &
+
+	TOKEN_EQ // ==
+	TOKEN_NE // !=
+	TOKEN_LT // <
+	TOKEN_GT // >
+	TOKEN_LE // <=
+	TOKEN_GE // >=
 )
 
 var keywords = map[string]TokenType{
 	"def":    TOKEN_DEF,
 	"return": TOKEN_RETURN,
+	"if":     TOKEN_IF,
+	"elif":   TOKEN_ELIF,
+	"else":   TOKEN_ELSE,
 }
 
 type Token struct {
@@ -225,7 +238,33 @@ func (l *Lexer) lexOperator() {
 	c := l.advance()
 	switch c {
 	case '=':
-		l.emit(TOKEN_ASSIGN, "=")
+		if l.peek() == '=' {
+			l.advance()
+			l.emit(TOKEN_EQ, "==")
+		} else {
+			l.emit(TOKEN_ASSIGN, "=")
+		}
+	case '!':
+		if l.peek() == '=' {
+			l.advance()
+			l.emit(TOKEN_NE, "!=")
+		} else {
+			panic(fmt.Sprintf("SyntaxError: line %d: unexpected character %q", l.line, "!"))
+		}
+	case '<':
+		if l.peek() == '=' {
+			l.advance()
+			l.emit(TOKEN_LE, "<=")
+		} else {
+			l.emit(TOKEN_LT, "<")
+		}
+	case '>':
+		if l.peek() == '=' {
+			l.advance()
+			l.emit(TOKEN_GE, ">=")
+		} else {
+			l.emit(TOKEN_GT, ">")
+		}
 	case '+':
 		l.emit(TOKEN_PLUS, "+")
 	case '-':

@@ -1,19 +1,71 @@
 package object
 
-func Equals(a PyObject, b PyObject) PyObject {
-	if ia, ok1 := asInt(a); ok1 {
-		if ib, ok2 := asInt(b); ok2 {
-			if ib.Value.Sign() == 0 {
-				panic("ZeroDivisionError: integer division by zero")
-			}
-
-			z := ia.Value.Cmp(ib.Value)
-			r := z == 0
-
-
-			return &PyBoolObject{Value: r}
+func compareNumbers(a, b PyObject) (float64, float64, bool) {
+	if ia, ok := asInt(a); ok {
+		if ib, ok := asInt(b); ok {
+			return float64(ia.Value.Int64()), float64(ib.Value.Int64()), true
+		}
+		if fb, ok := asFloat(b); ok {
+			return float64(ia.Value.Int64()), fb.Value, true
 		}
 	}
 
-	panic("not supported")
+	if fa, ok := asFloat(a); ok {
+		if ib, ok := asInt(b); ok {
+			return fa.Value, float64(ib.Value.Int64()), true
+		}
+		if fb, ok := asFloat(b); ok {
+			return fa.Value, fb.Value, true
+		}
+	}
+
+	return 0, 0, false
+}
+
+func Equals(a, b PyObject) PyObject {
+	x, y, ok := compareNumbers(a, b)
+	if !ok {
+		panic("unsupported ==")
+	}
+	return &PyBoolObject{Value: x == y}
+}
+
+func NotEquals(a, b PyObject) PyObject {
+	x, y, ok := compareNumbers(a, b)
+	if !ok {
+		panic("unsupported !=")
+	}
+	return &PyBoolObject{Value: x != y}
+}
+
+func Less(a, b PyObject) PyObject {
+	x, y, ok := compareNumbers(a, b)
+	if !ok {
+		panic("unsupported <")
+	}
+	return &PyBoolObject{Value: x < y}
+}
+
+func Greater(a, b PyObject) PyObject {
+	x, y, ok := compareNumbers(a, b)
+	if !ok {
+		panic("unsupported >")
+	}
+	return &PyBoolObject{Value: x > y}
+}
+
+func LessEqual(a, b PyObject) PyObject {
+	x, y, ok := compareNumbers(a, b)
+	if !ok {
+		panic("unsupported <=")
+	}
+	return &PyBoolObject{Value: x <= y}
+}
+
+func GreaterEqual(a, b PyObject) PyObject {
+	x, y, ok := compareNumbers(a, b)
+	if !ok {
+		panic("unsupported >=")
+	}
+	return &PyBoolObject{Value: x >= y}
 }

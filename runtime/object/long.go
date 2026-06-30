@@ -1,6 +1,7 @@
 package object
 
 import "math/big"
+
 type PyLongObject struct {
 	Value *big.Int
 }

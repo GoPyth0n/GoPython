@@ -52,7 +52,6 @@ func (p *Parser) peekIsAssign() bool {
 	return p.pos+1 < len(p.tokens) && p.tokens[p.pos+1].Type == TOKEN_ASSIGN
 }
 
-
 func (p *Parser) ParseModule() *Module {
 	mod := &Module{}
 	p.skipNewlines()
@@ -66,6 +65,9 @@ func (p *Parser) ParseModule() *Module {
 func (p *Parser) parseStmt() Stmt {
 	if p.check(TOKEN_DEF) {
 		return p.parseFuncDef()
+	}
+	if p.check(TOKEN_IF) {
+		return p.parseIf()
 	}
 	return p.parseSimpleStmt()
 }
@@ -111,28 +113,71 @@ func (p *Parser) parseSimpleStmt() Stmt {
 		p.advance()
 		var val Expr
 		if !p.check(TOKEN_NEWLINE) && !p.check(TOKEN_EOF) {
-			val = p.parseExpr()
+			val = p.parseComparison()
 		}
 		stmt = &ReturnStmt{Value: val}
 
 	case p.check(TOKEN_NAME) && p.peekIsAssign():
 		name := p.advance().Lit
 		p.expect(TOKEN_ASSIGN, "=")
-		stmt = &AssignStmt{Target: name, Value: p.parseExpr()}
+		stmt = &AssignStmt{Target: name, Value: p.parseComparison()}
 
 	default:
-		stmt = &ExprStmt{Value: p.parseExpr()}
+		stmt = &ExprStmt{Value: p.parseComparison()}
 	}
 
 	if !p.check(TOKEN_EOF) {
 		p.expect(TOKEN_NEWLINE, "newline")
 	}
 	return stmt
+} 
+
+func (p *Parser) parseIf() Stmt {
+	p.advance() // 'if'
+	return p.parseIfClause()
+}
+
+// parseIfClause parses the shared shape of `if`/`elif` clauses: a condition,
+// a colon, a block, and an optional elif/else continuation. `elif` is not a
+// distinct AST node — it's just desugared into a nested IfStmt living inside
+// the parent's Else slice, the same way CPython's own compiler treats it.
+func (p *Parser) parseIfClause() Stmt {
+	cond := p.parseComparison()
+	p.expect(TOKEN_COLON, ":")
+	thenBody := p.parseBlock()
+
+	var elseBody []Stmt
+	switch {
+	case p.check(TOKEN_ELIF):
+		p.advance() // 'elif' (note: no 'if' to consume — elif IS the if)
+		elseBody = []Stmt{p.parseIfClause()}
+	case p.check(TOKEN_ELSE):
+		p.advance()
+		p.expect(TOKEN_COLON, ":")
+		elseBody = p.parseBlock()
+	}
+
+	return &IfStmt{Cond: cond, Then: thenBody, Else: elseBody}
+}
+
+// parseComparison sits above parseExpr (+/-/&) and binds loosest among the
+// expression levels. NOTE: this does NOT implement Python's chained-comparison
+// semantics — `a < b < c` parses left-associatively as `(a < b) < c`, which
+// will type-error or give the wrong answer rather than evaluating as
+// `a < b and b < c` like real Python does. Fine for single comparisons.
+func (p *Parser) parseComparison() Expr {
+	left := p.parseExpr()
+	for p.check(TOKEN_EQ) || p.check(TOKEN_NE) || p.check(TOKEN_LT) ||
+		p.check(TOKEN_GT) || p.check(TOKEN_LE) || p.check(TOKEN_GE) {
+		op := p.advance().Lit
+		left = &BinOp{Op: op, Left: left, Right: p.parseExpr()}
+	}
+	return left
 }
 
 func (p *Parser) parseExpr() Expr {
 	left := p.parseTerm()
-	for p.check(TOKEN_PLUS) || p.check(TOKEN_MINUS)  || p.check(TOKEN_AMPERSAND) {
+	for p.check(TOKEN_PLUS) || p.check(TOKEN_MINUS) || p.check(TOKEN_AMPERSAND) {
 		op := p.advance().Lit
 		left = &BinOp{Op: op, Left: left, Right: p.parseTerm()}
 	}
@@ -175,10 +220,10 @@ func (p *Parser) parseCall() Expr {
 		p.advance()
 		var args []Expr
 		if !p.check(TOKEN_RPAREN) {
-			args = append(args, p.parseExpr())
+			args = append(args, p.parseComparison())
 			for p.check(TOKEN_COMMA) {
 				p.advance()
-				args = append(args, p.parseExpr())
+				args = append(args, p.parseComparison())
 			}
 		}
 		p.expect(TOKEN_RPAREN, ")")
